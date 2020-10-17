@@ -1,47 +1,36 @@
+# Libraries
 library(ggplot2)
 
-#  Read activity file
-#  1.  Code for reading in the dataset and/or processing the data
+# 1.  Code for reading in the dataset and/or processing the data
     if(!file.exists("./data/activity.csv")) {
         actData <- read.csv("./data/activity.csv", as.is = TRUE)
+        dim(actData)
+        names(actData)
+        head(actData)
+        str(actData)
+        sum(is.na(actData$steps))/dim(actData)[[1]]
         
         # Data without NA values
         realAct <- actData[complete.cases(actData), ]
-        
         summary(realAct)
     }
 
-# The variables included in this dataset are:
-#   steps: Number of steps taking in a 5-minute interval (missing values are coded as \color{red}{\verb|NA|}NA)
-#   date: The date on which the measurement was taken in YYYY-MM-DD format
-#   interval: Identifier for the 5-minute interval in which measurement was taken
-
 #2.  Histogram of the total number of steps taken each day
-    
-    dataSteps <- realAct$steps
-    hist(dataSteps,
-        main = "Total number of steps taken each day",
-        xlab = "Total number of steps",
-        xlim = c(0, 1000),
-        ylim = c(0, 15000),
-        ylab = "Frequency each day",
-        col = "darkmagenta"
-    )
-
+    #  Getting the steps per day by using tapply.
+    #  The data does not have NAs values.
+    stepsPerDay <- with(realAct, tapply(steps, date, FUN=sum))
+    hist(stepsPerDay, main = "Total number of steps each day", xlab = "Total number of steps")
 
 #  3.  Mean and median number of steps taken each day
-    meanSteps = round(mean(realAct$steps, na.rm = TRUE))
-    print(meanSteps) 
-    
-    medianSteps = median(dataSteps, na.rm = TRUE)
-    print(medianSteps)
+    summary(stepsPerDay)
+    meanSteps = round(mean(stepsPerDay, na.rm = TRUE))
+    medianSteps = median(stepsPerDay, na.rm = TRUE)
     print (paste("Mean number of steps taken each day is ", 
                  meanSteps, 
                  " and the median number of steps taken each day is  ", 
                  medianSteps
                  )
            )
-
 
 #  4.  Time series plot of the average number of steps taken
     # Average steps per interval.
@@ -66,7 +55,7 @@ library(ggplot2)
     print (paste("The interval with the highest average steps is ", 
                  aggInterval[intIndex, ]$interval, 
                  ".  The maximum number of steps based on that interval is ", 
-                 round(aggInterval[interval, ]$steps, 
+                 round(aggInterval[intIndex, ]$steps, 
                        digits = 1
                        )
                  )
@@ -74,7 +63,7 @@ library(ggplot2)
     
 
 # 6.  Code to describe and show a strategy for imputing missing data
-    # Calculate the number of rows with missing values
+    # Calculate the number of rows with missing values. Also done in step #1
     dataNA <- actData[!complete.cases(actData), ]
     nrow(dataNA)
     
@@ -83,7 +72,7 @@ library(ggplot2)
     # Then identify the avg steps for that interval in avg_steps_per_interval
     # Substitute the NA value with that value
     
-    # -  Histogram of the total number of steps taken each day after missing 
+#7. Histogram of the total number of steps taken each day after missing 
     # values are imputed
     for (i in 1:nrow(actData)) {
         if(is.na(actData$steps[i])) {
@@ -93,24 +82,25 @@ library(ggplot2)
     }
     
     # Aggregate the steps per day with the imputed values
-    steps_per_day_impute <- aggregate(steps ~ date, actData, sum)
+    imputeSteps <- aggregate(steps ~ date, actData, sum)
     
     # Draw a histogram of the value 
-    hist(steps_per_day_impute$steps, 
-        main = "Histogram of total number of steps per day (IMPUTED)", 
+    hist(imputeSteps$steps, 
+        col="blue",
+        main = "Histogram of total number of steps per day (Imputed)", 
         xlab = "Steps per day")
    
     
     # Compute the mean and median of the imputed value
     # Calculate the mean and median of the total number of steps taken per day
-    round(mean(steps_per_day_impute$steps))
+    round(mean(imputeSteps$steps))
     ## [1] 10766
-    median(steps_per_day_impute$steps)
+    median(imputeSteps$steps)
     ## [1] 10766.19 
     
-    # -  Panel plot comparing the average number of steps taken per 5-minute 
+#8. Panel plot comparing the average number of steps taken per 5-minute 
     # interval across weekdays and weekends
-    day <- weekdays(actData$date)
+    day <- weekdays(as.Date(actData$date))
     daylevel <- vector()
     for (i in 1:nrow(actData)) {
         if (day[i] == "Saturday") {
@@ -129,5 +119,13 @@ library(ggplot2)
     
     #Make a panel plot containing a time series plot (i.e. type = “l”) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). The plot should look something like the following, which was creating using simulated data:
         
-        xyplot(steps ~ interval | daylevel, stepsByDay, type = "l", layout = c(1, 2), 
-               xlab = "Interval", ylab = "Number of steps")
+    library(lattice)   
+     xyplot(steps ~ interval | daylevel, 
+            stepsByDay, 
+            type = "a", 
+            grid = TRUE,
+            layout = c(2, 1), 
+            xlab = "Interval",
+            ylab = "Number of steps")
+
+
