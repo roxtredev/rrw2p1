@@ -1,30 +1,85 @@
-# Libraries
-library(ggplot2)
+---
+title: "Course Project 1 - Reproducible Research (PA1_template)"
+author: "Roxana Trejos Ramírez"
+date: "10/17/2020"
+output: 
+    html_document:
+        keep_md: yes
+---
 
+# Introduction
+
+It is now possible to collect a large amount of data about personal movement using activity monitoring devices such as a Fitbit, Nike Fuelband, or Jawbone Up. These type of devices are part of the “quantified self” movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. But these data remain under-utilized both because the raw data are hard to obtain and there is a lack of statistical methods and software for processing and interpreting the data.
+
+This assignment makes use of data from a personal activity monitoring device. This device collects data at 5 minute intervals through out the day. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day.
+
+The data for this assignment can be downloaded from the course web site:
+
+Dataset: Activity monitoring data [52K]
+The variables included in this dataset are:
+
+steps: Number of steps taking in a 5-minute interval (missing values are coded as \color{red}{\verb|NA|}NA)
+date: The date on which the measurement was taken in YYYY-MM-DD format
+interval: Identifier for the 5-minute interval in which measurement was taken
+The dataset is stored in a comma-separated-value (CSV) file and there are a total of 17,568 observations in this dataset.
+
+Review criteria
+less 
+Repo
+
+Valid GitHub URL
+At least one commit beyond the original fork
+Valid SHA-1
+SHA-1 corresponds to a specific commit
+Commit containing full submission
+
+1.  Code for reading in the dataset and/or processing the data
+2.  Histogram of the total number of steps taken each day
+3.  Mean and median number of steps taken each day
+4.  Time series plot of the average number of steps taken
+5.  The 5-minute interval that, on average, contains the maximum number of steps
+6.  Code to describe and show a strategy for imputing missing data
+7.  Histogram of the total number of steps taken each day after missing values are imputed
+8.  Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
+
+
+### 1.  Code for reading in the dataset and/or processing the data
+
+```{r echo=TRUE}
+# Running libraies
+# Libraries
+    library(ggplot2)
+    library(lattice) 
+```
+
+```{r readfile}
 # 1.  Code for reading in the dataset and/or processing the data
-        actData <- read.csv("./data/activity.csv", as.is = TRUE)
-        dim(actData)
-        names(actData)
-        head(actData)
-        str(actData)
-        sum(is.na(actData$steps))/dim(actData)[[1]]
-        
-        # Data without NA values
-        realAct <- actData[complete.cases(actData), ]
-        summary(realAct)
-    
-#2.  Histogram of the total number of steps taken each day
-    #  Getting the steps per day by using tapply.
-    #  The data does not have NAs values.
+    actData <- read.csv("./data/activity.csv", as.is = TRUE)
+    dim(actData)
+    names(actData)
+    head(actData)
+    str(actData)
+    sum(is.na(actData$steps))/dim(actData)[[1]]
+```
+#### Cleaning Data.  Data without NAs value        
+```{r echo=TRUE}
+    realAct <- actData[complete.cases(actData), ]
+    summary(realAct)
+```
+
+### 2.  Histogram of the total number of steps taken each day
+```{r echo=TRUE}
+#  Getting the steps per day by using tapply.
+#  The data does not have NAs values.
     stepsPerDay <- with(realAct, tapply(steps, date, FUN=sum))
-    dev.copy(png, file="figure/plot1.png", height=480, width=480)
     hist(stepsPerDay, 
          col="red",
          main = "Total number of steps each day", 
          xlab = "Total number of steps")
-    dev.off()
+```
 
-#  3.  Mean and median number of steps taken each day
+###  3.  Mean and median number of steps taken each day
+```{r}
     summary(stepsPerDay)
     meanSteps = round(mean(stepsPerDay, na.rm = TRUE))
     medianSteps = median(stepsPerDay, na.rm = TRUE)
@@ -34,8 +89,9 @@ library(ggplot2)
                  medianSteps
                  )
            )
-
-#  4.  Time series plot of the average number of steps taken
+```
+###  4.  Time series plot of the average number of steps taken
+```{r}
     # Average steps per interval.
     aggInterval <- aggregate(steps ~ interval, realAct, mean)
     
@@ -48,9 +104,11 @@ library(ggplot2)
          xlab="Time Intervals", 
          ylab="Average number of steps"
     )
+```
 
-#5.  The 5-minute interval that, on average, contains the maximum number of steps
+### 5.  The 5-minute interval that, on average, contains the maximum number of steps
 
+```{r}
     # Identify the 5-minute interval index.
     intIndex <- which.max(aggInterval$steps)
     
@@ -63,9 +121,11 @@ library(ggplot2)
                        )
                  )
            )
-    
+```
 
-# 6.  Code to describe and show a strategy for imputing missing data
+### 6.  Code to describe and show a strategy for imputing missing data
+
+```{r}
     # Calculate the number of rows with missing values. Also done in step #1
     dataNA <- actData[!complete.cases(actData), ]
     nrow(dataNA)
@@ -74,8 +134,10 @@ library(ggplot2)
     # For each identify the interval for that row
     # Then identify the avg steps for that interval in avg_steps_per_interval
     # Substitute the NA value with that value
-    
-#7. Histogram of the total number of steps taken each day after missing 
+```
+
+### 7. Histogram of the total number of steps taken each day after missing 
+```{r}
     # values are imputed
     for (i in 1:nrow(actData)) {
         if(is.na(actData$steps[i])) {
@@ -100,8 +162,11 @@ library(ggplot2)
     ## [1] 10766
     median(imputeSteps$steps)
     ## [1] 10766.19 
-    
-#8. Panel plot comparing the average number of steps taken per 5-minute 
+```
+
+### 8. Panel plot comparing the average number of steps taken per 5-minute 
+
+```{r}
     # interval across weekdays and weekends
     day <- weekdays(as.Date(actData$date))
     daylevel <- vector()
@@ -130,5 +195,4 @@ library(ggplot2)
             layout = c(2, 1), 
             xlab = "Interval",
             ylab = "Number of steps")
-
-
+```
