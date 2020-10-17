@@ -17,11 +17,14 @@ library(ggplot2)
     #  Getting the steps per day by using tapply.
     #  The data does not have NAs values.
     stepsPerDay <- with(realAct, tapply(steps, date, FUN=sum))
-    dev.copy(png, file="figure/plot1.png", height=480, width=480)
+    
+    png("plot1.png")
+    
     hist(stepsPerDay, 
          col="red",
          main = "Total number of steps each day", 
          xlab = "Total number of steps")
+
     dev.off()
 
 #  3.  Mean and median number of steps taken each day
@@ -88,11 +91,12 @@ library(ggplot2)
     imputeSteps <- aggregate(steps ~ date, actData, sum)
     
     # Draw a histogram of the value 
+    png("plot2.png")
     hist(imputeSteps$steps, 
         col="blue",
         main = "Histogram of total number of steps per day (Imputed)", 
         xlab = "Steps per day")
-   
+    dev.off()
     
     # Compute the mean and median of the imputed value
     # Calculate the mean and median of the total number of steps taken per day
@@ -122,7 +126,8 @@ library(ggplot2)
     
     #Make a panel plot containing a time series plot (i.e. type = “l”) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). The plot should look something like the following, which was creating using simulated data:
         
-    library(lattice)   
+    library(lattice)
+    dev.copy(png, file="plot3.png", height=480, width=480)
      xyplot(steps ~ interval | daylevel, 
             stepsByDay, 
             type = "l", 
@@ -130,5 +135,4 @@ library(ggplot2)
             layout = c(2, 1), 
             xlab = "Interval",
             ylab = "Number of steps")
-
-
+     dev.off()
