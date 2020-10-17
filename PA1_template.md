@@ -45,44 +45,108 @@ Commit containing full submission
 
 ### 1.  Code for reading in the dataset and/or processing the data
 
-```{r echo=TRUE}
+
+```r
 # Running libraies
 # Libraries
     library(ggplot2)
     library(lattice) 
 ```
 
-```{r readfile}
+
+```r
 # 1.  Code for reading in the dataset and/or processing the data
     actData <- read.csv("./data/activity.csv", as.is = TRUE)
     dim(actData)
+```
+
+```
+## [1] 17568     3
+```
+
+```r
     names(actData)
+```
+
+```
+## [1] "steps"    "date"     "interval"
+```
+
+```r
     head(actData)
+```
+
+```
+##   steps       date interval
+## 1    NA 2012-10-01        0
+## 2    NA 2012-10-01        5
+## 3    NA 2012-10-01       10
+## 4    NA 2012-10-01       15
+## 5    NA 2012-10-01       20
+## 6    NA 2012-10-01       25
+```
+
+```r
     str(actData)
+```
+
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : chr  "2012-10-01" "2012-10-01" "2012-10-01" "2012-10-01" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+```
+
+```r
     sum(is.na(actData$steps))/dim(actData)[[1]]
 ```
+
+```
+## [1] 0.1311475
+```
 #### Cleaning Data.  Data without NAs value        
-```{r echo=TRUE}
+
+```r
     realAct <- actData[complete.cases(actData), ]
     summary(realAct)
 ```
 
+```
+##      steps            date              interval     
+##  Min.   :  0.00   Length:15264       Min.   :   0.0  
+##  1st Qu.:  0.00   Class :character   1st Qu.: 588.8  
+##  Median :  0.00   Mode  :character   Median :1177.5  
+##  Mean   : 37.38                      Mean   :1177.5  
+##  3rd Qu.: 12.00                      3rd Qu.:1766.2  
+##  Max.   :806.00                      Max.   :2355.0
+```
+
 ### 2.  Histogram of the total number of steps taken each day
-```{r echo=TRUE}
+
+```r
 #  Getting the steps per day by using tapply.
 #  The data does not have NAs values.
     stepsPerDay <- with(realAct, tapply(steps, date, FUN=sum))
-    # png("plot1.png")
     hist(stepsPerDay, 
          col="red",
          main = "Total number of steps each day", 
          xlab = "Total number of steps")
-    # dev.off()
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
 ###  3.  Mean and median number of steps taken each day
-```{r}
+
+```r
     summary(stepsPerDay)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##      41    8841   10765   10766   13294   21194
+```
+
+```r
     meanSteps = round(mean(stepsPerDay, na.rm = TRUE))
     medianSteps = median(stepsPerDay, na.rm = TRUE)
     print (paste("Mean number of steps taken each day is ", 
@@ -92,8 +156,13 @@ Commit containing full submission
                  )
            )
 ```
+
+```
+## [1] "Mean number of steps taken each day is  10766  and the median number of steps taken each day is   10765"
+```
 ###  4.  Time series plot of the average number of steps taken
-```{r}
+
+```r
     # Average steps per interval.
     aggInterval <- aggregate(steps ~ interval, realAct, mean)
     
@@ -108,9 +177,12 @@ Commit containing full submission
     )
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
+
 ### 5.  The 5-minute interval that, on average, contains the maximum number of steps
 
-```{r}
+
+```r
     # Identify the 5-minute interval index.
     intIndex <- which.max(aggInterval$steps)
     
@@ -125,13 +197,24 @@ Commit containing full submission
            )
 ```
 
+```
+## [1] "The interval with the highest average steps is  835 .  The maximum number of steps based on that interval is  206.2"
+```
+
 ### 6.  Code to describe and show a strategy for imputing missing data
 
-```{r}
+
+```r
     # Calculate the number of rows with missing values. Also done in step #1
     dataNA <- actData[!complete.cases(actData), ]
     nrow(dataNA)
-    
+```
+
+```
+## [1] 2304
+```
+
+```r
     # Loop thru all the rows of activity, find the one with NA for steps.
     # For each identify the interval for that row
     # Then identify the avg steps for that interval in avg_steps_per_interval
@@ -139,7 +222,8 @@ Commit containing full submission
 ```
 
 ### 7. Histogram of the total number of steps taken each day after missing 
-```{r}
+
+```r
     # values are imputed
     for (i in 1:nrow(actData)) {
         if(is.na(actData$steps[i])) {
@@ -152,24 +236,41 @@ Commit containing full submission
     imputeSteps <- aggregate(steps ~ date, actData, sum)
     
     # Draw a histogram of the value 
-    # png("plot2.png")
     hist(imputeSteps$steps, 
         col="blue",
         main = "Histogram of total number of steps per day (Imputed)", 
         xlab = "Steps per day")
-    # dev.off()
-    
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
+
+```r
     # Compute the mean and median of the imputed value
     # Calculate the mean and median of the total number of steps taken per day
     round(mean(imputeSteps$steps))
+```
+
+```
+## [1] 10766
+```
+
+```r
     ## [1] 10766
     median(imputeSteps$steps)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
     ## [1] 10766.19 
 ```
 
 ### 8. Panel plot comparing the average number of steps taken per 5-minute 
 
-```{r}
+
+```r
     # interval across weekdays and weekends
     day <- weekdays(as.Date(actData$date))
     daylevel <- vector()
@@ -190,8 +291,7 @@ Commit containing full submission
     
     #Make a panel plot containing a time series plot (i.e. type = “l”) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). The plot should look something like the following, which was creating using simulated data:
         
-    library(lattice)  
-    # dev.copy(png, file="plot3.png", height=480, width=480)
+    library(lattice)   
      xyplot(steps ~ interval | daylevel, 
             stepsByDay, 
             type = "l", 
@@ -199,5 +299,6 @@ Commit containing full submission
             layout = c(2, 1), 
             xlab = "Interval",
             ylab = "Number of steps")
-     # dev.off()
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
